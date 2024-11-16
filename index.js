@@ -13,7 +13,12 @@ const uri = process.env.MONGO_URI;
 const app = express();
 
 // Serve static files for uploads
-const uploadsPath = path.join(__dirname, "middlewares", "uploads");
+// Change uploads path to use '/tmp' directory for Vercel's writable environment
+const uploadsPath = path.join(
+  __dirname,
+  process.env.NODE_ENV === "production" ? "/tmp" : "middlewares",
+  "uploads"
+);
 app.use("/uploads", express.static(uploadsPath));
 
 // Authentication middleware
@@ -41,11 +46,7 @@ const isAuth = async (req, res, next) => {
 };
 
 app.use(express.static("build"));
-app.use(cors({
-  origin: 'https://assignment-frontend-sand.vercel.app',
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
-  credentials: true, // if credentials are needed
-}));
+app.use(cors());
 app.use(bodyparser.urlencoded({ extended: false }));
 app.use(bodyparser.json());
 
@@ -53,6 +54,7 @@ app.use(authRoute);
 app.use(isAuth, carRoute);
 app.use(isAuth, userRoute);
 
+// Check route for verifying authentication
 app.use("/check", isAuth, (req, res) => {
   try {
     return res.status(200).send({ data: req.user });
@@ -62,6 +64,7 @@ app.use("/check", isAuth, (req, res) => {
 });
 
 const PORT = process.env.PORT || 5000;
+
 const start = async () => {
   try {
     await connectDB(uri);
