@@ -41,7 +41,11 @@ const isAuth = async (req, res, next) => {
 };
 
 app.use(express.static("build"));
-app.use(cors());
+app.use(cors({
+  origin: 'https://assignment-frontend-sand.vercel.app',
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
+  credentials: true, // if credentials are needed
+}));
 app.use(bodyparser.urlencoded({ extended: false }));
 app.use(bodyparser.json());
 
